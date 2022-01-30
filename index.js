@@ -53,8 +53,6 @@ function getViewers(){
 
 getViewers();
 
-setInterval(getViewers, 120000);
-
 // PUBSUB
 
 ps.on('reward-redeemed', (data) => {
@@ -66,6 +64,7 @@ ps.on('reward-redeemed', (data) => {
     return;
   }
   let target = match[1];
+  getViewers();
   if (plik.includes(target)){
     client.timeout(config.channel, target, 300, `Zostałeś wykluczony z czatu przez @${banner}`);
     client.say(config.channel, `Pomyślnie zbanowano na 5 minut użytkownika @${target}! Wykupione przez @${banner}`)
