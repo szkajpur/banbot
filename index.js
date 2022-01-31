@@ -2,6 +2,7 @@
 
 const config = require("./config.json");
 const plik = require(config.listPath);
+const mody = require(config.modsPath);
 const { ChatClient } = require("dank-twitch-irc");
 const TwitchPS = require('@sammwy/twitch-ps');
 const got = require('got');
@@ -13,7 +14,7 @@ const usernameRegex = new RegExp(/^@?([\w]{1,25}),?$/);
 // CONNECT TO PUBSUB TOPICS
 
 let init_topics = [{topic: `community-points-channel-v1.${config.pubsubID}`, token: config.oauth}];
-var ps = new TwitchPS({reconnect: true, init_topics: init_topics, debug: false});
+var ps = new TwitchPS({reconnect: true, init_topics: init_topics, debug: true});
 
 // TWITCH CHAT CONNECT
 
@@ -42,16 +43,21 @@ function getViewers(){
     try {
       const response = await got(`https://tmi.twitch.tv/group/user/${config.channel}/chatters`);
       const lista = JSON.parse(response.body);
-      const listy = [...(lista.chatters.viewers), ...(lista.chatters.vips)]; 
+      const listy = [...(lista.chatters.viewers), ...(lista.chatters.vips)];
+      const modzi = [...(lista.chatters.moderators), ...(lista.chatters.broadcaster)];
       fs.writeFileSync(config.listPath, JSON.stringify(listy, null, 4));
-      console.log(`#${config.channel} chatters list updated! (${listy.length})`);
+      fs.writeFileSync(config.modsPath, JSON.stringify(modzi, null, 4));
+      console.log(`#${config.channel} UPDATE! chatters: (${listy.length}) moderators: (${modzi.length})`);
     } catch (error) {
       console.log(error.response.body);
+      return;
     }
   })();
 }
 
 getViewers();
+
+setInterval(getViewers, 180000);
 
 // PUBSUB
 
@@ -64,14 +70,17 @@ ps.on('reward-redeemed', (data) => {
     return;
   }
   let target = match[1];
-  getViewers();
+  if (target == config.channel || mody.includes(target)){
+    client.say(config.channel, `@${banner}, nie można wykluczyć moda/strimera!`);
+    return;
+  }
   if (plik.includes(target)){
-    client.timeout(config.channel, target, 300, `Zostałeś wykluczony z czatu przez @${banner}`);
-    client.say(config.channel, `Pomyślnie zbanowano na 5 minut użytkownika @${target}! Wykupione przez @${banner}`)
+    client.timeout(config.channel, target, 300, `Zostałeś wykluczony z czatu przez ${banner}`);
+    client.say(config.channel, `Pomyślnie zbanowano na 5 minut użytkownika ${target}! Wykupione przez ${banner}`)
     console.log(`${banner} wykluczył ${target}`);
   }
   else {
-    client.say(config.channel, `MODS Nie udało się znaleźć @${target}! Wykupione przez @${banner}`);
+    client.say(config.channel, `MODS Nie udało się znaleźć ${target}! Wykupione przez ${banner}`);
     console.log(`Nie udało się znaleźć ${target} wykluczonego przez ${banner}`);
   }
 });
@@ -102,10 +111,10 @@ client.on("PRIVMSG", async (msg) => {
         client.say(config.channel, `@${msg.senderUsername}, Brak argumentów! ${config.prefix}timeout [nick] [ilość timeoutów]`);
         return;
       }
-      let nick = args[0].toLowerCase();
+      let nick = usernameRegex.exec(args[0].toLowerCase());
       let timeout = parseInt(args[1]);
       timeout *= 300;
-      client.timeout(config.channel, nick, timeout, `Zostałeś ręcznie wykluczony z czatu na ${timeout} sekund!`);
+      client.timeout(config.channel, nick, timeout, `Zostałeś ręcznie wykluczony z czatu na ${timeout} sekund przez ${msg.senderUsername}!`);
       console.log(`${msg.senderUsername} ręcznie wykluczył ${nick} na ${timeout} sekund`);
       break;
   }
