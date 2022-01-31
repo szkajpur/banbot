@@ -3,7 +3,7 @@
     "oauth": "",
     "channel": "",
     "pubsubID": "",
-    "listPath": "",
+    "listPath": "./lista.json",
     "modsPath": "./mods.json",
     "prefix": "!"
 }
