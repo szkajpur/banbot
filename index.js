@@ -14,7 +14,7 @@ const usernameRegex = new RegExp(/^@?([\w]{1,25}),?$/);
 // CONNECT TO PUBSUB TOPICS
 
 let init_topics = [{topic: `community-points-channel-v1.${config.pubsubID}`, token: config.oauth}];
-var ps = new TwitchPS({reconnect: true, init_topics: init_topics, debug: true});
+var ps = new TwitchPS({reconnect: true, init_topics: init_topics, debug: false});
 
 // TWITCH CHAT CONNECT
 
