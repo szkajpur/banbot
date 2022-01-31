@@ -4,5 +4,6 @@
     "channel": "",
     "pubsubID": "",
     "listPath": "",
-    "prefix": ""
+    "modsPath": "./mods.json",
+    "prefix": "!"
 }
