@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
   "author": "szkajpur",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@sammwy/twitch-ps": "^1.0.0",
     "dank-twitch-irc": "^4.3.0",
